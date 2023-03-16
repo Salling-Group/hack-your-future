@@ -1,23 +1,39 @@
-import logo from './logo.svg';
 import './App.css';
+import { useEffect, useState } from 'react';
 
 function App() {
+
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    fetch("/api").then( resp => resp.json()).then(data => {
+     setData(data) 
+    });
+  }, []);
+
+  const renderOpeningHoursByStore = (store) => {
+    const openingHours = store.hours.filter((hour) => hour.type === 'store');
+
+      return (
+      <div>
+        <h3>{store.name} - Opening Hours</h3>
+        {openingHours.map((hours) => (
+           <p>open from {new Date(hours.open).getHours()} to {new Date(hours.close).getHours()}</p>  
+        ))}
+         
+      </div>
+      )
+  }
+
+ 
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+     <h1>Bilka stores - opening hours</h1>
+
+      <div>
+        {data ? data.map((store) => (<div>{renderOpeningHoursByStore(store)}</div>)) : "Loading..."}
+      </div>
+  
     </div>
   );
 }

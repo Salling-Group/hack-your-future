@@ -7,22 +7,19 @@ function App() {
 
   useEffect(() => {
     fetch("/api").then( resp => resp.json()).then(data => {
-      console.log(data);
      setData(data) 
     });
   }, []);
 
   const renderOpeningHoursByStore = (store) => {
+    const weekDays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const openingHours = store.hours.filter((hour) => hour.type === 'store');
-    console.log(openingHours);
-
       return (
       <div>
         <h3>{store.name} - Opening Hours</h3>
         {openingHours.map((hours) => (
-           <p>open from {new Date(hours.open).getHours()} to {new Date(hours.close).getHours()}</p>  
-        ))}
-         
+           <p>{weekDays[new Date(hours.date).getDay()]} from {new Date(hours.open).getHours()} to {new Date(hours.close).getHours()}</p>  
+        ))}      
       </div>
       )
   }

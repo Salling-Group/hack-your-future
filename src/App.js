@@ -28,12 +28,14 @@ function App() {
  
   return (
     <div className="App">
+
      <h1>Bilka stores - opening hours</h1>
 
       <div>
         {data ? data.map((store) => (<div>{renderOpeningHoursByStore(store)}</div>)) : "Loading..."}
       </div>
   
+
     </div>
   );
 }

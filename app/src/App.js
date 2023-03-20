@@ -1,5 +1,5 @@
 import './App.css';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 function App() {
 
@@ -24,8 +24,15 @@ function App() {
      });
   }
 
-  const showMostBusyStore = () => {
-    fetch("/most-busy-store/").then( resp => resp.json()).then(data => {
+  const showNearByStoreWithing10 = () => {
+    fetch("/find-nearby-stores/10").then( resp => resp.json()).then(data => {
+      if(!data.length) return;
+      setData(data) 
+     });
+  }
+
+  const showNearByStoreWithing50 = () => {
+    fetch("/find-nearby-stores/50").then( resp => resp.json()).then(data => {
       if(!data.length) return;
       setData(data) 
      });
@@ -62,7 +69,10 @@ function App() {
     <button onClick={fetchStoreOpeningHoursByName}>Sorted by name asc</button>
     </div>
     <div className='button-wrapper'>
-    <button onClick={showMostBusyStore}>Show the most busy store</button>
+    <button onClick={showNearByStoreWithing10}>Show stores within 10 Km</button>
+    </div>
+    <div className='button-wrapper'>
+    <button onClick={showNearByStoreWithing50}>Show stores within 50 Km</button>
     </div>
       
      

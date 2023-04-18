@@ -37,7 +37,8 @@ function App() {
       .then((data) => {
         if (!data.length) return;
         setData(data);
-      });
+      })
+      .catch(console.error());
   };
 
   const showNearByStoreWithing50 = () => {
@@ -46,7 +47,8 @@ function App() {
       .then((data) => {
         if (!data.length) return;
         setData(data);
-      });
+      })
+      .catch(console.error());
   };
 
   const renderOpeningHoursByStore = (store) => {

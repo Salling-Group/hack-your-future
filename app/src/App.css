@@ -1,42 +1,83 @@
+/* body {
+} */
+
+.header {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  background-color: #0091cf;
+}
+
+.Bilka-logo {
+  max-height: 50px;
+}
+.Salling-logo {
+  max-height: 50px;
+}
+
+h1 {
+  margin: 0;
+  text-align: center;
+  flex-grow: 1;
+  color: white;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-weight: 700;
+}
+
 .App {
   text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  flex-wrap: wrap;
+  margin: 0px;
+  justify-content: space-evenly;
+}
+.nav {
+  margin: 30px 0px 30px 0px;
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
+.store {
+  width: 100%;
+}
+.store h3 {
+  color: #0091cf;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+.store p {
+  color: #0091cf;
+  font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", sans-serif;
+  font-weight: 500;
+  font-size: 20px;
+}
+
+.button-wrapper button {
+  background-color: #0091cf;
+  display: block;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
   color: white;
+  font-size: 15px;
+  font-weight: 600;
+}
+.button-wrapper button:hover {
+  background-color: #3fb4e6;
+  transition: all 0.5s ease;
 }
 
-.App-link {
-  color: #61dafb;
-}
-
-.button-wrapper {
-  margin:20px
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+@media only screen and (max-width: 1024px) {
+  .button-wrapper {
+    width: 650px;
+    justify-content: center;
+    display: flex;
+    margin: 5px 0px 5px 0px;
   }
-  to {
-    transform: rotate(360deg);
+  .button-wrapper button {
+    width: 230px;
   }
 }

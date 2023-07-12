@@ -48,6 +48,7 @@ app.get('/sorted-stores/', async (req, res) => {
   }
 })
 
+//# Task three:
 app.get('/stores/storeId', async (req, res) => {
   try {
     const storeId = req.params.storeId

@@ -3,7 +3,7 @@
 Create an express server than communicates with a simple frontend application over localhost:3001
 We already build a very basic frontend and setup a very basic express template to get you going.
 
-The project consists of two folders - one for the frontend and one for the express server. Start out by running the frontend application by navigating into the frontend project and run `npm run dev`. Open a browser and navigate to localhost:3000.
+The project consists of two folders - one for the frontend and one for the express server. Start out by running the frontend application by navigating into the frontend project and run `npm run start`. Open a browser and navigate to localhost:3000.
 
 Afterwards continue implementing the different tasks specified below. Each task in the list below has a designated button in the frontend that will call the specified endpoints.
 

@@ -1,0 +1,28 @@
+.table {
+    margin-top: 40px;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.table thead {
+    background-color: #d3cbce;
+}
+
+.table th,
+.table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.storeName {
+    text-align: center;
+    font-weight: 500;
+}
+
+td.openHours {
+    padding-left: 40px;
+}

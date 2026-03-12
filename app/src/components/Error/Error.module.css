@@ -1,0 +1,16 @@
+.errorWrapper {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.errorContainer {
+    border: 2px solid #d3cbce;
+    min-height: 200px;
+    width: 350px;
+    padding: 20px;
+    border-radius: 20px;
+    background-color: #ffb9b9;
+}

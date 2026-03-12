@@ -1,10 +1,25 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+const ErrorMessage = ({ message }) => {
+  if (!message) return null;
+
+  return (
+    <div className="error-box">
+      <p>{message}</p>
+    </div>
+  );
+};
 
 function App() {
 
-  const [data, setData] = useState(null);
-
+  const [data, setData] = useState([]);
+ const [errorMessage, setErrorMessage] = useState('')
+useEffect(()=>{
+  if(data.length > 0){
+setErrorMessage('')
+  }
+},[data]);
 
   const fetchStoreOpeningHours = () => {
     fetch("/stores/").then( resp => resp.json()).then(data => {
@@ -27,15 +42,22 @@ function App() {
   const showNearByStoreWithing10 = () => {
         setData([])
     fetch("/find-nearby-stores/10").then( resp => resp.json()).then(data => {
-      if(!data.length && data.length === 0) return;
+      if(!data.length && data.length === 0) { 
+        setErrorMessage('No stores available') 
+          return;
+        }
       setData(data) 
      });
   }
 
   const showNearByStoreWithing50 = () => {
     setData([])
+
     fetch("/find-nearby-stores/50").then( resp => resp.json()).then(data => {
-      if(!data.length && data.length === 0) return;
+      if(!data.length && data.length === 0)
+        { setErrorMessage('No stores available') 
+          return;
+        }
       setData(data) 
      });
   }
@@ -83,7 +105,7 @@ function App() {
       <div>
         {data && data.map((store) => (<div className="store-card" key={store.id}>{renderOpeningHoursByStore(store)}</div>))}
       </div>
-  
+  {data.length ===0 && <ErrorMessage message={errorMessage}></ErrorMessage>}
 
     </div>
   );

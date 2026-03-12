@@ -78,3 +78,16 @@ button:active {
 .store-card p {
   margin-bottom: 6px;
 }
+
+.error-box {
+  background-color: #ffe5e5;
+  color: #b30000;
+  border: 1px solid #ffb3b3;
+  padding: 12px 18px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: center;
+  font-weight: 500;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}

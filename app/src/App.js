@@ -25,15 +25,17 @@ function App() {
   }
 
   const showNearByStoreWithing10 = () => {
+        setData([])
     fetch("/find-nearby-stores/10").then( resp => resp.json()).then(data => {
-      if(!data.length) return;
+      if(!data.length && data.length === 0) return;
       setData(data) 
      });
   }
 
   const showNearByStoreWithing50 = () => {
+    setData([])
     fetch("/find-nearby-stores/50").then( resp => resp.json()).then(data => {
-      if(!data.length) return;
+      if(!data.length && data.length === 0) return;
       setData(data) 
      });
   }
@@ -79,7 +81,7 @@ function App() {
       
 
       <div>
-        {data && data.map((store) => (<div>{renderOpeningHoursByStore(store)}</div>))}
+        {data && data.map((store) => (<div className="store-card" key={store.id}>{renderOpeningHoursByStore(store)}</div>))}
       </div>
   
 

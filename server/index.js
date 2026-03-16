@@ -32,7 +32,7 @@ function extractList(data) {
   return [];
 }
 
-function normalizeHours(store) {
+function processWorkHours(store) {
   if (Array.isArray(store?.hours)) return store.hours;
   if (Array.isArray(store?.hours?.store)) return store.hours.store;
   return [];
@@ -100,7 +100,7 @@ app.get('/sorted-stores/', async (req, res) => {
 
     const normalized = filtered.map((s) => ({
       ...s,
-      hours: normalizeHours(s),
+      hours: processWorkHours(s),
     }));
 
     return res.json(normalized);

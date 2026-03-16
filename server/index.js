@@ -1,173 +1,157 @@
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '.env') });
+import express from 'express';
+import 'dotenv/config';
+import axios from 'axios';
+import cors from 'cors';
+import morgan from 'morgan';
 
-const serverApp = express();
-const serverPort = process.env.PORT || 3001;
-const sgApiToken = process.env.SG_TOKEN;
+// --- Config ---
+const PORT = Number(process.env.PORT || 3001);
+const API_BASE_URL = process.env.API_BASE_URL;
+const SG_API_TOKEN = process.env.SG_API_TOKEN; 
+const TOTAL_PAGE = Number(process.env.TOTAL_PAGE || 100);
+const DEFAULT_GEO = process.env.DEFAULT_GEO || '56.162387,10.0078135';
 
-if (!sgApiToken) {
+if (!API_BASE_URL || !SG_API_TOKEN) {
   process.exit(1);
 }
 
-const SG_API_BASE_URL = 'https://api.sallinggroup.com/v2/stores';
+// --- Axios client ---
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    Authorization: `Bearer ${SG_API_TOKEN}`,
+    Accept: 'application/json',
+  },
+});
 
-serverApp.use(cors());
-serverApp.use(express.json());
+// --- Helpers ---
+function extractList(data) {
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.items)) return data.items;
+  if (Array.isArray(data?.results)) return data.results;
+  return [];
+}
 
-// Fetch wrapper
-async function fetchSGData(path = '', params = {}) {
-  const queryString =
-    Object.keys(params).length > 0
-      ? `?${new URLSearchParams(params).toString()}`
-      : '';
+function normalizeHours(store) {
+  if (Array.isArray(store?.hours)) return store.hours;
+  if (Array.isArray(store?.hours?.store)) return store.hours.store;
+  return [];
+}
 
-  const normalizedPath = path ? (path.startsWith('/') ? path : `/${path}`) : '';
-  const requestUrl = `${SG_API_BASE_URL}${normalizedPath}${queryString}`;
+// --- App setup ---
+const app = express();
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
 
-  const controller = new AbortController();
-  const timeoutHandler = setTimeout(() => controller.abort(), 10000); // 10s timeout
+// --- Routes ---
 
+// 1) GET /stores/ -> Only Bilka stores
+app.get('/stores/', async (req, res) => {
   try {
-    const response = await fetch(requestUrl, {
-      headers: {
-        Authorization: `Bearer ${sgApiToken}`,
-        Accept: 'application/json',
+    const resp = await api.get('/v2/stores', {
+      params: {
+        per_page: TOTAL_PAGE,
+        fields: 'id,name,brand,address,location,hours',
       },
-      signal: controller.signal,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      console.error('SG API error', response.status, errorText);
-      throw new Error(`SG API error ${response.status}: ${errorText}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Fetch failed for', requestUrl, '-', error.name, error.message);
-    throw error;
-  } finally {
-    clearTimeout(timeoutHandler);
-  }
-}
-
-// Store shaping
-function normalizeStoreData(store) {
-  return {
-    id: store.id,
-    name: store.name,
-    brand: store.brand,
-    coordinates: store.coordinates,
-    hours: store.hours || [],
-  };
-}
-
-// Distance calculation
-function calculateDistanceKm(lat1, lon1, lat2, lon2) {
-  const toRad = (degrees) => (degrees * Math.PI) / 180;
-  const EARTH_RADIUS_KM = 6371;
-
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-
-  return EARTH_RADIUS_KM * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
-serverApp.get('/stores/', async (req, res) => {
-  try {
-    const data = await fetchSGData('', { brand: 'bilka', size: 100 });
-    const storeList = Array.isArray(data) ? data : data.items || [];
-
-    const bilkaStores = storeList.filter(
-      (store) => (store.brand || '').toLowerCase() === 'bilka'
+    const list = extractList(resp.data);
+    const bilkaStores = list.filter(
+      (s) => String(s?.brand || '').toLowerCase() === 'bilka'
     );
 
-    res.json(bilkaStores.map(normalizeStoreData));
+    return res.json(bilkaStores);
   } catch (error) {
     console.error('Error /stores:', error.message);
-    res.status(502).json({ error: 'Upstream SG API failed', detail: error.message });
+    return res.json([]);
   }
 });
 
-serverApp.get('/sorted-stores/', async (req, res) => {
+// 2) GET /sorted-stores/?brand=&per_page=
+//    -> filters by brand (optional), sorts by name asc, normalizes hours
+app.get('/sorted-stores/', async (req, res) => {
   try {
-    const data = await fetchSGData('', { brand: 'bilka', size: 100 });
-    const storeList = Array.isArray(data) ? data : data.items || [];
+    const { brand, per_page } = req.query;
+    const pageSize = Number(per_page) || TOTAL_PAGE;
 
-    const bilkaStores = storeList
-      .filter((store) => (store.brand || '').toLowerCase() === 'bilka')
-      .map(normalizeStoreData)
-      .sort((a, b) => a.name.localeCompare(b.name));
+    const resp = await api.get('/v2/stores', {
+      params: {
+        per_page: pageSize,
+        fields: 'id,name,brand,address,location,hours',
+      },
+    });
 
-    res.json(bilkaStores);
+    const list = extractList(resp.data);
+
+    const filtered = brand
+      ? list.filter(
+          (s) =>
+            String(s?.brand || '').toLowerCase() ===
+            String(brand || '').toLowerCase()
+        )
+      : list;
+
+    filtered.sort((a, b) =>
+      String(a?.name || '').localeCompare(String(b?.name || ''), undefined, {
+        sensitivity: 'base',
+      })
+    );
+
+    const normalized = filtered.map((s) => ({
+      ...s,
+      hours: normalizeHours(s),
+    }));
+
+    return res.json(normalized);
   } catch (error) {
     console.error('Error /sorted-stores:', error.message);
-    res.status(502).json({ error: 'Upstream SG API failed', detail: error.message });
+    return res.json([]);
   }
 });
 
-serverApp.get('/stores/:storeId', async (req, res) => {
+// 3) GET /stores/:storeId -> Return [store] or []
+app.get('/stores/:storeId', async (req, res) => {
   try {
-    const store = await fetchSGData(`/${req.params.storeId}`);
-    if (!store || !store.id) return res.json([]);
-    res.json([normalizeStoreData(store)]);
+    const { storeId } = req.params;
+
+    const resp = await api.get(`/v2/stores/${storeId}`, {
+      params: { fields: 'id,name,brand,address,location,hours' },
+    });
+
+    const store = resp.data || null;
+    if (!store?.id) return res.json([]);
+    return res.json([store]);
   } catch (error) {
-    if (String(error.message).includes('404')) return res.json([]);
     console.error('Error /stores/:storeId:', error.message);
-    res.status(502).json({ error: 'Upstream SG API failed', detail: error.message });
+    return res.json([]);
   }
 });
 
-// HQ Coordinates
-const companyHQCoordinates = { lat: 56.162387, lon: 10.0078135 };
-
-serverApp.get('/find-nearby-stores/:distance', async (req, res) => {
+// 4) GET /find-nearby-stores/:distance?geo=lat,lng
+//    -> returns upstream body or [] on error
+app.get('/find-nearby-stores/:distance', async (req, res) => {
   try {
-    const distanceKm = Number(req.params.distance);
-    if (!Number.isFinite(distanceKm) || distanceKm <= 0) {
-      return res.status(400).json({ error: 'Distance must be a positive number' });
-    }
+    const { distance } = req.params; // fixed from 'area'
+    const { geo = DEFAULT_GEO } = req.query;
 
-    const data = await fetchSGData('', { brand: 'bilka', size: 100 });
-    const storeList = Array.isArray(data) ? data : data.items || [];
+    const resp = await api.get('/v2/stores', {
+      params: {
+        geo, // "lat,lng"
+        radius: distance, // units depend on upstream API
+        per_page: TOTAL_PAGE,
+        fields: 'name,hours,address,location,brand',
+      },
+    });
 
-    const nearbyStoreResults = storeList
-      .filter((store) => (store.brand || '').toLowerCase() === 'bilka')
-      .map(normalizeStoreData)
-      .map((store) => {
-        const lat = store.coordinates?.lat ?? store.coordinates?.latitude;
-        const lon = store.coordinates?.lon ?? store.coordinates?.longitude;
-
-        const validCoordinates = typeof lat === 'number' && typeof lon === 'number';
-
-        return {
-          ...store,
-          distanceKm: validCoordinates
-            ? calculateDistanceKm(
-                companyHQCoordinates.lat,
-                companyHQCoordinates.lon,
-                lat,
-                lon
-              )
-            : Infinity,
-        };
-      })
-      .filter((store) => store.distanceKm <= distanceKm)
-      .sort((a, b) => a.distanceKm - b.distanceKm);
-
-    res.json(nearbyStoreResults);
+    return res.json(resp.data);
   } catch (error) {
-    console.error('Error /find-nearby-stores/:distance:', error.message);
-    res.status(502).json({ error: 'Upstream SG API failed', detail: error.message });
+    console.error('Error /find-nearby-stores:', error.message);
+    return res.json([]);
   }
 });
 
-serverApp.listen(serverPort, () => {
-  console.log(`Listening on port ${serverPort}`);
+// --- Start server ---
+app.listen(PORT, () => {
+  console.log(`✅ Listening on http://localhost:${PORT}`);
 });

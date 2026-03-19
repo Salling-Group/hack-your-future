@@ -18,25 +18,32 @@ function App() {
 useEffect(()=>{
   if(data.length > 0){
 setErrorMessage('')
-  } else {
-    setErrorMessage('No available stores')
   }
 },[data]);
 
   const fetchStoreOpeningHours = () => {
     fetch("/stores/").then( resp => resp.json()).then(data => {
+      if(!data.length && data.length === 0) { 
+        setErrorMessage('No stores available') 
+        }
       setData(data) 
      });
   }
 
   const fetchStoreOpeningHoursBilkaTilts = () => {
     fetch("/stores/efba0457-090e-4132-81ba-c72b4c8e7fee").then( resp => resp.json()).then(data => {
+      if(!data.length && data.length === 0) { 
+        setErrorMessage('No stores available') 
+        }
       setData(data) 
      });
   }
 
   const fetchStoreOpeningHoursByName = () => {
     fetch("/sorted-stores/").then( resp => resp.json()).then(data => {
+      if(!data.length && data.length === 0) { 
+        setErrorMessage('No stores available') 
+        }
       setData(data) 
      });
   }
@@ -46,7 +53,6 @@ setErrorMessage('')
     fetch("/find-nearby-stores/10").then( resp => resp.json()).then(data => {
       if(!data.length && data.length === 0) { 
         setErrorMessage('No stores available') 
-          return;
         }
       setData(data) 
      });

@@ -18,6 +18,8 @@ function App() {
 useEffect(()=>{
   if(data.length > 0){
 setErrorMessage('')
+  } else {
+    setErrorMessage('No available stores')
   }
 },[data]);
 

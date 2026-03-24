@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es5" /* Sets the JS version for output */,
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ] /* Libraries available in the environment */,
+    "allowJs": true /* Allows JS files to coexist with TSX */,
+    "jsx": "react-jsx" /* Required for React 17+ JSX transform */,
+    "moduleResolution": "node" /* How modules are found */,
+    "strict": false /* Start as 'false' for easier migration */,
+    "noEmit": true /* Let your bundler (Vite/Webpack) handle output */,
+    "esModuleInterop": true /* Fixes common import issues */,
+    "skipLibCheck": true /* Skips type checking of declaration files */
+  },
+  "include": ["src"] /* Only check files in the src folder */
+}
